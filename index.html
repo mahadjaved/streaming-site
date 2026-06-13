@@ -17,19 +17,14 @@
           padding: 40px 15px;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           background: #0a0a0a; 
+          border-radius: 30px;
       }
-        
-      /* --- AMBIENT LIGHTING OVERHAUL START --- */
-      
-      /* 1. Wrapper that creates the glowing field behind the video container */
       .ambient-glow-wrapper {
           position: relative;
           border-radius: 12px;
-          padding: 3px; /* Subtle border framing */
+          padding: 3px; 
           background: linear-gradient(135deg, rgba(83, 104, 120, 0.3), rgba(17, 17, 17, 0.5));
       }
-
-      /* 2. The actual glowing backdrop layer */
       .ambient-glow-wrapper::before {
           content: '';
           position: absolute;
@@ -39,15 +34,9 @@
           bottom: -10px;
           z-index: -1;
           border-radius: 20px;
-          
-          /* Mix of stadium grass green and your active button slate blue */
           background: linear-gradient(120deg, #1e3a27, #536878, #162a3b, #1b4332);
           background-size: 300% 300%;
-          
-          /* The heavy blur that mimics YouTube's ambient light */
           filter: blur(45px) opacity(0.65);
-          
-          /* Subtle breathing animation so the glow doesn't feel dead */
           animation: ambientPulse 12s ease infinite;
           pointer-events: none;
       }
@@ -57,8 +46,6 @@
           50% { background-position: 100% 50%; filter: blur(55px) opacity(0.75); }
           100% { background-position: 0% 50%; filter: blur(45px) opacity(0.6); }
       }
-      
-      /* --- AMBIENT LIGHTING OVERHAUL END --- */
 
       .video-container {
           position: relative;
@@ -67,7 +54,6 @@
           overflow: hidden;
           background: #111111;
           border-radius: 8px;
-          /* Enhanced shadow depth to blend with the glow */
           box-shadow: 0 10px 40px rgba(0,0,0,0.95);
       }
         
@@ -81,7 +67,7 @@
       }
         
       .controls-container {
-          margin-top: 30px; /* Added slight spacing away from the glow */
+          margin-top: 30px;
           background: #111111;
           padding: 20px;
           border-radius: 8px;
