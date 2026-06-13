@@ -1,12 +1,151 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arena Web Dev App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream Dashboard</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+		.body {
+          font-family: Inter;
+      }
+        .stream-dashboard {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0a; 
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background: #111111;
+            border-radius: 8px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.9);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .controls-container {
+            margin-top: 20px;
+            background: #111111;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #222222;
+        }
+        
+        .control-title {
+            color: #666666;
+            font-size: 13px;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .stream-btn {
+            background: #1a1a1a;
+            color: #aaaaaa;
+            border: 1px solid #333333;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease-in-out;
+            flex: 1 1 calc(20% - 12px);
+            min-width: 130px;
+        }
+        
+        .stream-btn:hover {
+            background: #262626;
+            color: #ffffff;
+            border-color: #666666;
+        }
+        
+        .stream-btn.active {
+            background: #536878;
+            color: #ffffff;
+            border-color: #536878;
+            box-shadow: 0 0 12px rgba(167, 196, 188, 0.4);
+        }
+        .feed-links, 
+        .blog-pager, 
+        #blog-pager,
+        .post-feeds,
+        .post-title,     
+        .entry-title,    
+        h1.post-title,   
+        .header-outer    {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+      
+      	h2 {
+          font-family: Inter;
+          Color: white;
+          font-size: 30px;
+          padding-left: 40px;
+      }
+    </style>
+</head>
+<body style="background-color: #0a0a0a; margin: 0;">
+  <h2>Live Match Streaming ( 6FIFA6 )</h2>
+    <div class="stream-dashboard">
+        <div class="video-container">
+            <iframe id="live-stream" 
+                    src="https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/3" 
+                    scrolling="no" 
+                    frameborder="0" 
+                    allowfullscreen="true" 
+                    webkitallowfullscreen="true" 
+                    mozallowfullscreen="true">
+            </iframe>
+        </div>
+
+        <div class="controls-container">
+            <p class="control-title">Select Live Stream Source:</p>
+            <div class="button-group">
+                <button class="stream-btn active" onclick="switchStream('https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/3', this)">Stream 1 (Fox)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/1', this)">Stream 2 (BBC)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/7', this)">Stream 3 (Backup 1)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/delta/live_world-championship-gr-b_canada-bih-live-streaming-1243321434/1', this)">Stream 4 (Backup 2)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/delta/live_world-championship-gr-b_canada-bih-live-streaming-1243321434/2', this)">Stream 5 (Backup 3)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchStream(streamUrl, buttonElement) {
+            const player = document.getElementById('live-stream');
+            if (player) {
+                player.src = streamUrl;
+            }
+            
+            const buttons = document.querySelectorAll('.stream-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            buttonElement.classList.add('active');
+        }
+    </script>
+</body>
 </html>
