@@ -138,16 +138,22 @@
           padding-left: 40px;
           margin-top: 30px;
       }
+      p {
+          font-family: Inter;
+          color: #737373;
+          padding-left: 40px;
+          padding-top: 10px;
     </style>
 </head>
 <body style="background-color: #0a0a0a; margin: 0;">
   <h2>Live Streaming Dashboard</h2>
+    <p>Streams only work when there's a live active match.</p>
     <div class="stream-dashboard">
         
         <div class="ambient-glow-wrapper">
             <div class="video-container">
                 <iframe id="live-stream" 
-                        src="https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/3" 
+                        src="https://embed.st/embed/admin/ppv-qatar-vs-switzerland/3" 
                         scrolling="no" 
                         frameborder="0" 
                         allowfullscreen="true" 
@@ -160,16 +166,16 @@
         <div class="controls-container">
             <p class="control-title">Select Live Stream Source:</p>
             <div class="button-group">
-                <button class="stream-btn active" onclick="switchStream('https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/3', this)">Stream 1 (Fox)</button>
-                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/1', this)">Stream 2 (BBC)</button>
-                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-canada-vs-bosnia-herzegovina/7', this)">Stream 3 (Backup 1)</button>
-                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/delta/live_world-championship-gr-b_canada-bih-live-streaming-1243321434/1', this)">Stream 4 (Backup 2)</button>
-                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/delta/live_world-championship-gr-b_canada-bih-live-streaming-1243321434/2', this)">Stream 5 (Backup 3)</button>
+                <button class="stream-btn active" onclick="switchStream('https://embed.st/embed/admin/ppv-qatar-vs-switzerland/3', this)">Stream 1 (Fox)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-qatar-vs-switzerland/1', this)">Stream 2 (ITV1)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/delta/live_world-championship-gr-b_qatar-switzerland-live-streaming-1243362393/1', this)">Stream 3 (Backup 1)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/delta/live_world-championship-gr-b_qatar-switzerland-live-streaming-1243362393/2', this)">Stream 4 (Backup 2)</button>
+                <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-qatar-vs-switzerland/4', this)">Stream 5 (Backup 3)</button>
                 <button class="stream-btn" onclick="switchStream('https://embed.st/embed/admin/ppv-barcelona-grand-prix-qualifying/3', this)">Gran Prix (Apple TV)</button>
             </div>
         </div>
     </div>
-
+    <p>For a complete ad-blocking experience, we recommend using Firefox and uBlock Origin add-on.</p>
     <script>
         function switchStream(streamUrl, buttonElement) {
             const player = document.getElementById('live-stream');
