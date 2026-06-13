@@ -183,16 +183,5 @@
             buttonElement.classList.add('active');
         }
     </script>
-    <script>
-    let preventBust = 0;
-    window.onbeforeunload = function() {
-        preventBust++;
-        if (preventBust > 0) {
-            setTimeout(function() {
-                window.stop();
-            }, 1);
-        }
-    };
-    </script>
 </body>
 </html>
