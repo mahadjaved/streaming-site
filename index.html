@@ -255,48 +255,53 @@
                 player.src = streamUrl;
             }
             
-            const buttons = document.querySelectorAll('.stream-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            if(buttonElement) {
-                buttonElement.classList.add('active');
+            if (buttonElement) {
+                const parentGroup = buttonElement.parentElement;
+                if (parentGroup) {
+                    const siblingButtons = parentGroup.querySelectorAll('.stream-btn');
+                    siblingButtons.forEach(btn => btn.classList.remove('active'));
+                }
+                buttonElement.add('active');
             }
         }
 
         function updateMultiStreams(sectionType, maxButtons) {
             const selectEl = document.getElementById(`${sectionType}-select`);
-            const combinedKey = selectEl.value;
+            const matchId = selectEl.value;
             
-            if (!combinedKey || !matchStreamsCache[combinedKey]) {
+            if (!matchId || !matchStreamsCache[matchId]) {
                 for (let i = 1; i <= maxButtons; i++) {
                     const btn = document.getElementById(`${sectionType}-${i}`);
-                    btn.disabled = true;
-                    btn.dataset.url = '';
-                    btn.innerText = `Stream ${i} (Offline)`;
-                    btn.classList.remove('active');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.dataset.url = '';
+                        btn.innerText = `Stream ${i} (Offline)`;
+                        btn.classList.remove('active');
+                    }
                 }
                 return;
             }
 
-            const sortedStreams = matchStreamsCache[combinedKey];
+            const sortedStreams = matchStreamsCache[matchId];
             
             for (let i = 1; i <= maxButtons; i++) {
                 const btn = document.getElementById(`${sectionType}-${i}`);
+                if (!btn) continue;
+
                 const streamData = sortedStreams[i - 1];
 
                 if (streamData) {
                     btn.disabled = false;
                     btn.dataset.url = streamData.embedUrl;
                     
-                    let langSuffix = "";
-                    if (streamData.language && streamData.language !== "Unknown" && streamData.language !== "English") {
-                        langSuffix = ` (${streamData.language})`;
-                    }
-
                     if (sectionType === 'football') {
-                        btn.innerText = i <= 2 ? `Stream ${i} (FHD)${langSuffix}` : i <= 4 ? `Stream ${i} (Backup ${i-2})${langSuffix}` : `Stream ${i} (Low Quality)${langSuffix}`;
+                        btn.innerText = i <= 2 ? `Stream ${i} (FHD)` : i <= 4 ? `Stream ${i} (Backup ${i-2})` : `Stream ${i} (Low Quality)`;
                     } else {
-                        btn.innerText = i === 1 ? `Stream 1 (HD)${langSuffix}` : i === 2 ? `Stream 2 (Backup)${langSuffix}` : `Stream 3 (Low Quality)${langSuffix}`;
+                        btn.innerText = i === 1 ? 'Stream 1 (HD)' : i === 2 ? 'Stream 2 (Backup)' : 'Stream 3 (Low Quality)';
+                    }
+                    
+                    if (i === 1 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
+                        switchStream(streamData.embedUrl, btn);
                     }
                 } else {
                     btn.disabled = true;
@@ -304,11 +309,6 @@
                     btn.innerText = `Stream ${i} (Offline)`;
                     btn.classList.remove('active');
                 }
-            }
-
-            const firstActiveBtn = document.getElementById(`${sectionType}-1`);
-            if (firstActiveBtn && !firstActiveBtn.disabled) {
-                switchStream(firstActiveBtn.dataset.url, firstActiveBtn);
             }
         }
 
@@ -323,84 +323,49 @@
                 const f1Matches = matches.filter(m => m.category === 'f1' || m.category === 'formula1' || m.title.toLowerCase().includes('grand prix'));
                 const cricketMatches = matches.filter(m => m.category === 'cricket' || m.title.toLowerCase().includes('pakw') || m.title.toLowerCase().includes('indw') || m.title.toLowerCase().includes('cricket'));
 
-                function processDropdownSection(matchList, selectId, sectionType, maxButtons) {
+                function processSection(matchList, selectId, sectionType, maxButtons) {
                     const selectEl = document.getElementById(selectId);
-                    if (matchList.length === 0) return;
+                    if (!selectEl || matchList.length === 0) return;
 
                     selectEl.innerHTML = '';
-                    
-                    const groupedMatches = {};
+                    let isFirstMatch = true;
 
-                    matchList.forEach(match => {
-                        const normalizedTitle = match.title
-                            .toLowerCase()
-                            .normalize("NFD")
-                            .replace(/[\u0300-\u036f]/g, "")
-                            .replace(/\s*\(.*?\)\s*/g, "")
-                            .trim();
-
-                        if (!groupedMatches[normalizedTitle]) {
-                            groupedMatches[normalizedTitle] = {
-                                title: match.title.replace(/\s*\(.*?\)\s*/g, "").trim(),
-                                sources: []
-                            };
-                        }
-                        if (match.sources && match.sources.length > 0) {
-                            groupedMatches[normalizedTitle].sources.push(match.sources[0]);
-                        }
-                    });
-
-                    let isFirstOption = true;
-
-                    Object.keys(groupedMatches).forEach(key => {
-                        const group = groupedMatches[key];
-                        
+                    matchList.forEach((match) => {
                         const option = document.createElement('option');
-                        option.value = key;
-                        option.innerText = group.title;
+                        option.value = match.id;
+                        option.innerText = match.title;
                         selectEl.appendChild(option);
 
-                        const fetchPromises = group.sources.map(source => 
-                            fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`)
+                        if (match.sources && match.sources.length > 0) {
+                            fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}`)
                                 .then(res => res.json())
-                                .catch(() => [])
-                        );
+                                .then(streams => {
+                                    matchStreamsCache[match.id] = streams.sort((a, b) => {
+                                        if (a.hd !== b.hd) return b.hd - a.hd;
+                                        if (a.language === 'English' && b.language !== 'English') return -1;
+                                        return 0;
+                                    });
 
-                        Promise.all(fetchPromises).then(results => {
-                            let allStreams = [].concat(...results);
-
-                            allStreams = allStreams.filter((stream, index, self) =>
-                                index === self.findIndex((s) => s.embedUrl === stream.embedUrl)
-                            );
-
-                            allStreams.sort((a, b) => {
-                                const aLang = a.language || '';
-                                const bLang = b.language || '';
-                                if (aLang === 'English' && bLang !== 'English') return -1;
-                                if (bLang === 'English' && aLang !== 'English') return 1;
-                                if (a.hd !== b.hd) return b.hd - a.hd;
-                                return 0;
-                            });
-
-                            matchStreamsCache[key] = allStreams;
-
-                            if (isFirstOption) {
-                                updateMultiStreams(sectionType, maxButtons);
-                                isFirstOption = false;
-                            }
-                        });
+                                    if (isFirstMatch) {
+                                        selectEl.value = match.id;
+                                        updateMultiStreams(sectionType, maxButtons);
+                                        isFirstMatch = false;
+                                    }
+                                })
+                                .catch(err => console.error("Error fetching stream data:", err));
+                        }
                     });
                 }
 
-                processDropdownSection(footballMatches, 'football-select', 'football', 5);
-                processDropdownSection(cricketMatches, 'cricket-select', 'cricket', 3);
+                processSection(footballMatches, 'football-select', 'football', 5);
+                processSection(cricketMatches, 'cricket-select', 'cricket', 3);
 
                 if (f1Matches.length > 0) {
                     const container = document.getElementById('f1-container');
                     container.innerHTML = ''; 
 
                     f1Matches.forEach((match) => {
-                        if (match.sources.length > 0) {
+                        if (match.sources && match.sources.length > 0) {
                             fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}`)
                                 .then(res => res.json())
                                 .then(streams => {
@@ -437,7 +402,8 @@
                                             }
                                         });
                                     }
-                                });
+                                })
+                                .catch(err => console.error("Error fetching F1 stream details:", err));
                         }
                     });
                 }
@@ -450,5 +416,4 @@
     
     <script defer src="/_vercel/insights/script.js"></script>
 </body>
-                                                        </html>
-
+</html>
