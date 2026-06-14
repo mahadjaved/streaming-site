@@ -255,30 +255,25 @@
                 player.src = streamUrl;
             }
             
-            if (buttonElement) {
-                const parentGroup = buttonElement.parentElement;
-                if (parentGroup) {
-                    const siblingButtons = parentGroup.querySelectorAll('.stream-btn');
-                    siblingButtons.forEach(btn => btn.classList.remove('active'));
-                }
-                buttonElement.add('active');
+            const buttons = document.querySelectorAll('.stream-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if(buttonElement) {
+                buttonElement.classList.add('active');
             }
         }
 
-        function updateMultiStreams(sectionType, maxButtons, forceAutoplay = false) {
+        function updateMultiStreams(sectionType, maxButtons) {
             const selectEl = document.getElementById(`${sectionType}-select`);
-            if (!selectEl) return;
             const combinedKey = selectEl.value;
             
             if (!combinedKey || !matchStreamsCache[combinedKey]) {
                 for (let i = 1; i <= maxButtons; i++) {
                     const btn = document.getElementById(`${sectionType}-${i}`);
-                    if (btn) {
-                        btn.disabled = true;
-                        btn.dataset.url = '';
-                        btn.innerText = `Stream ${i} (Offline)`;
-                        btn.classList.remove('active');
-                    }
+                    btn.disabled = true;
+                    btn.dataset.url = '';
+                    btn.innerText = `Stream ${i} (Offline)`;
+                    btn.classList.remove('active');
                 }
                 return;
             }
@@ -287,8 +282,6 @@
             
             for (let i = 1; i <= maxButtons; i++) {
                 const btn = document.getElementById(`${sectionType}-${i}`);
-                if (!btn) continue;
-                
                 const streamData = sortedStreams[i - 1];
 
                 if (streamData) {
@@ -313,14 +306,9 @@
                 }
             }
 
-            const currentPlayerSrc = document.getElementById('live-stream').src;
-            const isPlayerEmpty = !currentPlayerSrc || currentPlayerSrc === window.location.href + "about:blank";
-
-            if (forceAutoplay || isPlayerEmpty) {
-                const firstActiveBtn = document.getElementById(`${sectionType}-1`);
-                if (firstActiveBtn && !firstActiveBtn.disabled) {
-                    switchStream(firstActiveBtn.dataset.url, firstActiveBtn);
-                }
+            const firstActiveBtn = document.getElementById(`${sectionType}-1`);
+            if (firstActiveBtn && !firstActiveBtn.disabled) {
+                switchStream(firstActiveBtn.dataset.url, firstActiveBtn);
             }
         }
 
@@ -331,31 +319,17 @@
             .then(matches => {
                 statusText.innerText = "Streams only work when there's a live active match.";
 
-                const footballMatches = [];
-                const f1Matches = [];
-                const cricketMatches = [];
-
-                matches.forEach(m => {
-                    const titleLower = m.title.toLowerCase();
-                    const catLower = (m.category || '').toLowerCase();
-
-                    if (catLower === 'f1' || catLower === 'formula1' || titleLower.includes('grand prix') || titleLower.includes('formula 1')) {
-                        f1Matches.push(m);
-                    } else if (catLower === 'cricket' || titleLower.includes('pakw') || titleLower.includes('indw') || titleLower.includes('cricket') || titleLower.includes('t20')) {
-                        cricketMatches.push(m);
-                    } else {
-                        footballMatches.push(m);
-                    }
-                });
+                const footballMatches = matches.filter(m => m.category === 'football');
+                const f1Matches = matches.filter(m => m.category === 'f1' || m.category === 'formula1' || m.title.toLowerCase().includes('grand prix'));
+                const cricketMatches = matches.filter(m => m.category === 'cricket' || m.title.toLowerCase().includes('pakw') || m.title.toLowerCase().includes('indw') || m.title.toLowerCase().includes('cricket'));
 
                 function processDropdownSection(matchList, selectId, sectionType, maxButtons) {
                     const selectEl = document.getElementById(selectId);
-                    if (!selectEl || matchList.length === 0) return;
+                    if (matchList.length === 0) return;
 
                     selectEl.innerHTML = '';
                     
                     const groupedMatches = {};
-                    const orderTracking = [];
 
                     matchList.forEach(match => {
                         const normalizedTitle = match.title
@@ -370,28 +344,22 @@
                                 title: match.title.replace(/\s*\(.*?\)\s*/g, "").trim(),
                                 sources: []
                             };
-                            orderTracking.push(normalizedTitle);
                         }
-                        
                         if (match.sources && match.sources.length > 0) {
-                            match.sources.forEach(src => {
-                                groupedMatches[normalizedTitle].sources.push(src);
-                            });
+                            groupedMatches[normalizedTitle].sources.push(match.sources[0]);
                         }
                     });
 
-                    orderTracking.forEach(key => {
+                    let isFirstOption = true;
+
+                    Object.keys(groupedMatches).forEach(key => {
                         const group = groupedMatches[key];
+                        
                         const option = document.createElement('option');
                         option.value = key;
                         option.innerText = group.title;
                         selectEl.appendChild(option);
-                    });
 
-                    const firstKey = orderTracking[0];
-
-                    orderTracking.forEach(key => {
-                        const group = groupedMatches[key];
                         const fetchPromises = group.sources.map(source => 
                             fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`)
                                 .then(res => res.json())
@@ -416,8 +384,9 @@
 
                             matchStreamsCache[key] = allStreams;
 
-                            if (key === firstKey) {
-                                updateMultiStreams(sectionType, maxButtons, true);
+                            if (isFirstOption) {
+                                updateMultiStreams(sectionType, maxButtons);
+                                isFirstOption = false;
                             }
                         });
                     });
@@ -431,58 +400,55 @@
                     container.innerHTML = ''; 
 
                     f1Matches.forEach((match) => {
-                        if (match.sources && match.sources.length > 0) {
-                            const fetchPromises = match.sources.map(source =>
-                                fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`)
-                                    .then(res => res.json())
-                                    .catch(() => [])
-                            );
+                        if (match.sources.length > 0) {
+                            fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}`)
+                                .then(res => res.json())
+                                .then(streams => {
+                                    if (streams.length > 0) {
+                                        const sorted = streams.sort((a, b) => {
+                                            if (a.hd !== b.hd) return b.hd - a.hd;
+                                            if (a.language === 'English' && b.language !== 'English') return -1;
+                                            return 0;
+                                        });
 
-                            Promise.all(fetchPromises).then(results => {
-                                let allStreams = [].concat(...results);
+                                        sorted.forEach((stream, index) => {
+                                            const btn = document.createElement('button');
+                                            btn.className = 'stream-btn';
+                                            btn.dataset.url = stream.embedUrl;
+                                            
+                                            let label = "Stream " + (index + 1);
+                                            if (stream.name && stream.name.trim() !== "") {
+                                                label = stream.name;
+                                            } else if (stream.language && stream.language !== "Unknown") {
+                                                label = stream.language;
+                                            }
 
-                                allStreams = allStreams.filter((stream, index, self) =>
-                                    index === self.findIndex((s) => s.embedUrl === stream.embedUrl)
-                                );
+                                            if (index === sorted.length - 1 && sorted.length > 1) {
+                                                btn.innerText = "Low Quality Stream";
+                                            } else {
+                                                btn.innerText = label;
+                                            }
 
-                                if (allStreams.length > 0) {
-                                    const sorted = allStreams.sort((a, b) => {
-                                        if (a.hd !== b.hd) return b.hd - a.hd;
-                                        if (a.language === 'English' && b.language !== 'English') return -1;
-                                        return 0;
-                                    });
+                                            btn.onclick = () => switchStream(stream.embedUrl, btn);
+                                            container.appendChild(btn);
 
-                                    sorted.forEach((stream, index) => {
-                                        const btn = document.createElement('button');
-                                        btn.className = 'stream-btn';
-                                        btn.dataset.url = stream.embedUrl;
-                                        
-                                        let label = "Stream " + (index + 1);
-                                        if (stream.name && stream.name.trim() !== "") {
-                                            label = stream.name;
-                                        } else if (stream.language && stream.language !== "Unknown") {
-                                            label = stream.language;
-                                        }
-
-                                        if (index === sorted.length - 1 && sorted.length > 1) {
-                                            btn.innerText = "Low Quality Stream";
-                                        } else {
-                                            btn.innerText = label;
-                                        }
-
-                                        btn.onclick = () => switchStream(stream.embedUrl, btn);
-                                        container.appendChild(btn);
-
-                                        if (index === 0 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
-                                            switchStream(stream.embedUrl, btn);
-                                        }
-                                    });
-                                }
-                            });
+                                            if (index === 0 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
+                                                switchStream(stream.embedUrl, btn);
+                                            }
+                                        });
+                                    }
+                                });
                         }
                     });
                 }
             })
             .catch(err => {
                 console.error("API error:", err);
-                statusText.innerText = "Error 
+                statusText.innerText = "Error syncing stream feeds. Using hardcoded backups.";
+            });
+    </script>
+    
+    <script defer src="/_vercel/insights/script.js"></script>
+</body>
+                                                        </html>
+
