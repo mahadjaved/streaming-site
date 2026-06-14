@@ -149,7 +149,7 @@
       .stream-btn:disabled {
           opacity: 0.3;
           cursor: not-allowed;
-        }
+      }
         
       .stream-btn:hover:not(:disabled) {
           background: #262626;
@@ -267,15 +267,18 @@
 
         function updateMultiStreams(sectionType, maxButtons, forceAutoplay = false) {
             const selectEl = document.getElementById(`${sectionType}-select`);
+            if (!selectEl) return;
             const combinedKey = selectEl.value;
             
             if (!combinedKey || !matchStreamsCache[combinedKey]) {
                 for (let i = 1; i <= maxButtons; i++) {
                     const btn = document.getElementById(`${sectionType}-${i}`);
-                    btn.disabled = true;
-                    btn.dataset.url = '';
-                    btn.innerText = `Stream ${i} (Offline)`;
-                    btn.classList.remove('active');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.dataset.url = '';
+                        btn.innerText = `Stream ${i} (Offline)`;
+                        btn.classList.remove('active');
+                    }
                 }
                 return;
             }
@@ -284,6 +287,8 @@
             
             for (let i = 1; i <= maxButtons; i++) {
                 const btn = document.getElementById(`${sectionType}-${i}`);
+                if (!btn) continue;
+                
                 const streamData = sortedStreams[i - 1];
 
                 if (streamData) {
@@ -345,7 +350,7 @@
 
                 function processDropdownSection(matchList, selectId, sectionType, maxButtons) {
                     const selectEl = document.getElementById(selectId);
-                    if (matchList.length === 0) return;
+                    if (!selectEl || matchList.length === 0) return;
 
                     selectEl.innerHTML = '';
                     
@@ -472,4 +477,12 @@
                                             switchStream(stream.embedUrl, btn);
                                         }
                                     });
-        
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("API error:", err);
+                statusText.innerText = "Error 
