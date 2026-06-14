@@ -255,15 +255,17 @@
                 player.src = streamUrl;
             }
             
-            const buttons = document.querySelectorAll('.stream-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            if(buttonElement) {
+            if (buttonElement) {
+                const parentGroup = buttonElement.parentElement;
+                if (parentGroup) {
+                    const siblingButtons = parentGroup.querySelectorAll('.stream-btn');
+                    siblingButtons.forEach(btn => btn.classList.remove('active'));
+                }
                 buttonElement.classList.add('active');
             }
         }
 
-        function updateMultiStreams(sectionType, maxButtons) {
+        function updateMultiStreams(sectionType, maxButtons, forceAutoplay = false) {
             const selectEl = document.getElementById(`${sectionType}-select`);
             const combinedKey = selectEl.value;
             
@@ -306,9 +308,14 @@
                 }
             }
 
-            const firstActiveBtn = document.getElementById(`${sectionType}-1`);
-            if (firstActiveBtn && !firstActiveBtn.disabled) {
-                switchStream(firstActiveBtn.dataset.url, firstActiveBtn);
+            const currentPlayerSrc = document.getElementById('live-stream').src;
+            const isPlayerEmpty = !currentPlayerSrc || currentPlayerSrc === window.location.href + "about:blank";
+
+            if (forceAutoplay || isPlayerEmpty) {
+                const firstActiveBtn = document.getElementById(`${sectionType}-1`);
+                if (firstActiveBtn && !firstActiveBtn.disabled) {
+                    switchStream(firstActiveBtn.dataset.url, firstActiveBtn);
+                }
             }
         }
 
@@ -330,6 +337,7 @@
                     selectEl.innerHTML = '';
                     
                     const groupedMatches = {};
+                    const orderTracking = [];
 
                     matchList.forEach(match => {
                         const normalizedTitle = match.title
@@ -344,29 +352,32 @@
                                 title: match.title.replace(/\s*\(.*?\)\s*/g, "").trim(),
                                 sources: []
                             };
+                            orderTracking.push(normalizedTitle);
                         }
                         if (match.sources && match.sources.length > 0) {
                             groupedMatches[normalizedTitle].sources.push(match.sources[0]);
                         }
                     });
 
-                    let isFirstOption = true;
-
-                    Object.keys(groupedMatches).forEach(key => {
+                    orderTracking.forEach(key => {
                         const group = groupedMatches[key];
-                        
                         const option = document.createElement('option');
                         option.value = key;
                         option.innerText = group.title;
                         selectEl.appendChild(option);
+                    });
 
+                    const firstKey = orderTracking[0];
+
+                    const allFetchPromises = orderTracking.map(key => {
+                        const group = groupedMatches[key];
                         const fetchPromises = group.sources.map(source => 
                             fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`)
                                 .then(res => res.json())
                                 .catch(() => [])
                         );
 
-                        Promise.all(fetchPromises).then(results => {
+                        return Promise.all(fetchPromises).then(results => {
                             let allStreams = [].concat(...results);
 
                             allStreams = allStreams.filter((stream, index, self) =>
@@ -384,9 +395,8 @@
 
                             matchStreamsCache[key] = allStreams;
 
-                            if (isFirstOption) {
-                                updateMultiStreams(sectionType, maxButtons);
-                                isFirstOption = false;
+                            if (key === firstKey) {
+                                updateMultiStreams(sectionType, maxButtons, true);
                             }
                         });
                     });
