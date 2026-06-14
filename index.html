@@ -178,7 +178,6 @@
     <p>For a complete ad-blocking experience, we recommend using Firefox and uBlock Origin add-on.</p>
 
     <script>
-        // Global switch stream engine
         function switchStream(streamUrl, buttonElement) {
             if(!streamUrl) return;
             const player = document.getElementById('live-stream');
@@ -194,38 +193,31 @@
             }
         }
 
-        // Connect up the API logic seamlessly
         const statusText = document.getElementById('match-status-text');
 
         fetch('https://streamed.pk/api/matches/live')
             .then(res => res.json())
             .then(matches => {
                 statusText.innerText = "Streams only work when there's a live active match.";
-
-                // 1. AUTO-ROUTE FOOTBALL CHANNELS (1 - 5)
                 const footballMatch = matches.find(m => m.category === 'football');
                 if (footballMatch && footballMatch.sources.length > 0) {
                     const source = footballMatch.sources[0];
                     fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`)
                         .then(res => res.json())
                         .then(streams => {
-                            // Sort by HD first, English language first
                             const sorted = streams.sort((a, b) => {
                                 if (a.hd !== b.hd) return b.hd - a.hd;
                                 if (a.language === 'English' && b.language !== 'English') return -1;
                                 return 0;
                             });
-
-                            // Map available streams to your 5 buttons
                             for (let i = 1; i <= 5; i++) {
                                 const btn = document.getElementById(`football-${i}`);
-                                const streamData = sorted[i - 1]; // arrays are 0-indexed
+                                const streamData = sorted[i - 1];
 
                                 if (streamData) {
                                     btn.disabled = false;
                                     btn.dataset.url = streamData.embedUrl;
-                                    
-                                    // If this is the first working channel, set it up as the active player immediately
+                                
                                     if (i === 1) {
                                         switchStream(streamData.embedUrl, btn);
                                     }
@@ -235,8 +227,6 @@
                             }
                         });
                 }
-
-                // 2. AUTO-ROUTE GRAND PRIX BUTTON
                 const f1Match = matches.find(m => m.category === 'f1' || m.category === 'formula1' || m.title.toLowerCase().includes('grand prix'));
                 if (f1Match && f1Match.sources.length > 0) {
                     fetch(`https://streamed.pk/api/stream/${f1Match.sources[0].source}/${f1Match.sources[0].id}`)
@@ -247,15 +237,12 @@
                                 btn.disabled = false;
                                 btn.dataset.url = streams[0].embedUrl;
                                 
-                                // If no football is playing, default to playing F1 straight away
                                 if (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank") {
                                     switchStream(streams[0].embedUrl, btn);
                                 }
                             }
                         });
                 }
-
-                // 3. AUTO-ROUTE CRICKET BUTTON
                 const cricketMatch = matches.find(m => m.category === 'cricket' || m.title.toLowerCase().includes('pakw') || m.title.toLowerCase().includes('indw'));
                 if (cricketMatch && cricketMatch.sources.length > 0) {
                     fetch(`https://streamed.pk/api/stream/${cricketMatch.sources[0].source}/${cricketMatch.sources[0].id}`)
