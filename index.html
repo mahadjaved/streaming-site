@@ -304,8 +304,22 @@
 
                 if (footballMatches.length > 0) {
                     selectEl.innerHTML = '';
+                    const seenTitles = new Set();
+                    let isFirstValidMatch = true;
                     
-                    footballMatches.forEach((match, index) => {
+                    footballMatches.forEach((match) => {
+                        const normalizedTitle = match.title
+                            .toLowerCase()
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .trim();
+
+                        if (seenTitles.has(normalizedTitle)) {
+                            return;
+                        }
+                        
+                        seenTitles.add(normalizedTitle);
+
                         const option = document.createElement('option');
                         option.value = match.id;
                         option.innerText = match.title;
@@ -322,8 +336,9 @@
                                         return 0;
                                     });
 
-                                    if (index === 0) {
+                                    if (isFirstValidMatch) {
                                         updateFootballStreams('football');
+                                        isFirstValidMatch = false;
                                     }
                                 });
                         }
