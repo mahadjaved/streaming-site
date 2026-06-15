@@ -41,6 +41,14 @@
 
       .header-section {
           padding: 40px 40px 20px 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+      }
+
+      .header-text-group {
+          display: flex;
+          flex-direction: column;
       }
 
       h2 {
@@ -54,13 +62,62 @@
           margin: 0;
       }
 
-      /* Left side gets player/streams, Right side gets Schedule */
+      .widget-toggles {
+          display: flex;
+          gap: 10px;
+          background: #111111;
+          padding: 6px;
+          border-radius: 30px;
+          border: 1px solid #222222;
+      }
+
+      .toggle-btn {
+          background: transparent;
+          color: #555555;
+          border: none;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-family: 'Inter', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+      }
+
+      .toggle-btn.active {
+          background: #1a1a1a;
+          color: #ffffff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      }
+
+      .toggle-dot {
+          width: 6px;
+          height: 6px;
+          background: #444444;
+          border-radius: 50%;
+          transition: background 0.2s ease;
+      }
+
+      .toggle-btn.active .toggle-dot {
+          background: #2ed573;
+      }
+
       .dashboard-container {
           padding: 0 15px 40px 15px;
           display: grid;
           grid-template-columns: 1fr 400px;
           gap: 24px;
-          align-items: start; /* prevents schedule from stretching and making the page long */
+          align-items: start;
+          transition: grid-template-columns 0.3s ease;
+      }
+
+      .dashboard-container.widgets-disabled {
+          grid-template-columns: 1fr 400px;
       }
 
       .media-stack {
@@ -68,6 +125,21 @@
           flex-direction: column;
           gap: 24px;
           min-width: 0;
+      }
+
+      .dashboard-container.widgets-disabled .media-stack {
+          display: contents;
+      }
+
+      .sidebar-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          min-width: 0;
+      }
+
+      .sidebar-stack.hidden {
+          display: none;
       }
 
       .player-column { width: 100%; }
@@ -82,6 +154,12 @@
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 24px;
+      }
+
+      .dashboard-container.widgets-disabled .controls-column {
+          grid-template-columns: 1fr;
+          height: 100%;
+          align-content: start;
       }
 
       .ambient-glow-wrapper {
@@ -183,7 +261,7 @@
           flex-direction: column;
           gap: 8px;
           margin-bottom: 12px;
-      }
+       }
 
       .match-toggle-btn {
           background: #161616;
@@ -272,9 +350,6 @@
           box-shadow: 0 0 12px rgba(167, 196, 188, 0.4);
       }
 
-      /* Schedule (Right side): cap height so it ends around where stream options end. */
-      .world-cup-wrapper { min-width: 0; }
-
       .wc-card {
           background: #111111;
           border: 1px solid #222222;
@@ -283,8 +358,8 @@
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          /* Key change: it won't grow forever */
-          max-height: calc(100vh - 140px);
+          max-height: 480px;
+          transition: transform 0.3s ease, opacity 0.3s ease;
       }
 
       .wc-header-inline {
@@ -329,7 +404,7 @@
           background: #161616;
           border: 1px solid rgba(112, 161, 255, 0.2);
           border-radius: 8px;
-          padding: 24px;
+          padding: 20px;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -348,14 +423,13 @@
 
       .wc-teams-display {
           color: #ffffff;
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 700;
           margin-bottom: 6px;
       }
 
-      .wc-time-display { color: #aaaaaa; font-size: 13px; }
+      .wc-time-display { color: #aaaaaa; font-size: 12px; }
 
-      /* The scroll now happens INSIDE the widget */
       .wc-schedule-scroll {
           display: flex;
           flex-direction: column;
@@ -389,7 +463,7 @@
           text-align: right;
           font-size: 12px;
           flex-shrink: 0;
-      }
+       }
 
       .footer-ad-notice {
           flex-shrink: 0;
@@ -415,20 +489,34 @@
       }
 
       @media (max-width: 990px) {
-          .dashboard-container { grid-template-columns: 1fr; gap: 24px; }
+          .header-section { flex-direction: column; gap: 16px; align-items: flex-start; }
+          .dashboard-container, .dashboard-container.widgets-disabled { grid-template-columns: 1fr; gap: 24px; }
+          .sidebar-stack { width: 100%; }
           .wc-card { max-height: none; }
           .wc-schedule-scroll { max-height: 400px; }
+          .dashboard-container.widgets-disabled .media-stack { display: flex; }
       }
     </style>
   </head>
   <body>
     <div class="main-content">
         <div class="header-section">
-            <h2>Live Streaming Dashboard</h2>
-            <p class="text" id="match-status-text">Checking for active matches...</p>
+            <div class="header-text-group">
+                <h2>Live Streaming Dashboard</h2>
+                <p class="text" id="match-status-text">Checking for active matches...</p>
+            </div>
+            
+            <div class="widget-toggles">
+                <button id="toggle-fifa-btn" class="toggle-btn active" onclick="toggleDashboardWidget('fifa-widget', this)">
+                    <span class="toggle-dot"></span> FIFA Fixtures
+                </button>
+                <button id="toggle-f1-btn" class="toggle-btn active" onclick="toggleDashboardWidget('f1-widget', this)">
+                    <span class="toggle-dot"></span> F1 Standings
+                </button>
+            </div>
         </div>
         
-        <div class="dashboard-container">
+        <div class="dashboard-container" id="dashboard-layout">
             <div class="media-stack">
                 <div class="player-column">
                     <div id="glow-wrapper" class="ambient-glow-wrapper">
@@ -484,8 +572,8 @@
                 </div>
             </div>
 
-            <div class="world-cup-wrapper">
-                <div class="wc-card">
+            <div class="sidebar-stack" id="sidebar-container">
+                <div class="wc-card" id="fifa-widget">
                     <div class="wc-header-inline">
                         <div class="wc-title-main">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#70a1ff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L11 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
@@ -505,6 +593,27 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="wc-card" id="f1-widget">
+                    <div class="wc-header-inline">
+                        <div class="wc-title-main">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff4757"><path d="M21 12l-3-3H6L3 12l3 3h12l3-3zM2 12c0-4.41 3.59-8 8-8h4c4.41 0 8 3.59 8 8s-3.59 8-8 8h-4c-4.41 0-8-3.59-8-8z"/></svg>
+                            F1 World Drivers' Championship
+                        </div>
+                        <div class="wc-live-badge" style="background: #2ed573;">2026 Season</div>
+                    </div>
+                    
+                    <div class="wc-grid-layout">
+                        <div class="wc-next-match-box" id="f1-leader-hook" style="border-color: rgba(255, 71, 87, 0.2);">
+                            <div class="wc-label-mini" style="color: #ff4757;">Championship Leader</div>
+                            <div class="wc-teams-display" id="f1-leader-name">Loading Standings...</div>
+                            <div class="wc-time-display" id="f1-leader-team">Connecting to network...</div>
+                        </div>
+                        <div class="wc-schedule-scroll" id="f1-board-hook">
+                            <div class="wc-schedule-row"><span class="wc-row-teams">Fetching current standings...</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -516,6 +625,39 @@
     <script>
         let matchStreamsCache = {};
         let activeMatchIds = { football: null, cricket: null };
+
+        function toggleDashboardWidget(widgetId, buttonElement) {
+            const widget = document.getElementById(widgetId);
+            if (!widget) return;
+
+            if (widget.style.display === 'none') {
+                widget.style.display = 'flex';
+                buttonElement.classList.add('active');
+            } else {
+                widget.style.display = 'none';
+                buttonElement.classList.remove('active');
+            }
+
+            evalLayoutState();
+        }
+
+        function evalLayoutState() {
+            const fifaWidget = document.getElementById('fifa-widget');
+            const f1Widget = document.getElementById('f1-widget');
+            const sidebarContainer = document.getElementById('sidebar-container');
+            const dashboardLayout = document.getElementById('dashboard-layout');
+
+            const fifaHidden = fifaWidget && fifaWidget.style.display === 'none';
+            const f1Hidden = f1Widget && f1Widget.style.display === 'none';
+
+            if (fifaHidden && f1Hidden) {
+                sidebarContainer.classList.add('hidden');
+                dashboardLayout.classList.add('widgets-disabled');
+            } else {
+                sidebarContainer.classList.remove('hidden');
+                dashboardLayout.classList.remove('widgets-disabled');
+            }
+        }
 
         function switchStream(streamUrl, buttonElement, categoryType) {
             if(!streamUrl) return;
@@ -557,16 +699,18 @@
             const container = document.getElementById(`${sectionType}-matches-container`);
             const panel = document.getElementById(`${sectionType}-panel`);
             
-            container.querySelectorAll('.match-toggle-btn').forEach(btn => {
-                if(btn.dataset.id === matchId) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
+            if (container) {
+                container.querySelectorAll('.match-toggle-btn').forEach(btn => {
+                    if(btn.dataset.id === matchId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
 
             activeMatchIds[sectionType] = matchId;
-            panel.classList.add('expanded');
+            if (panel) panel.classList.add('expanded');
             updateMultiStreams(sectionType, maxButtons);
         }
 
@@ -575,7 +719,7 @@
             const panel = document.getElementById(`${sectionType}-panel`);
             
             if (!matchId || !matchStreamsCache[matchId]) {
-                panel.classList.remove('expanded');
+                if (panel) panel.classList.remove('expanded');
                 for (let i = 1; i <= maxButtons; i++) {
                     const btn = document.getElementById(`${sectionType}-${i}`);
                     if (btn) {
@@ -618,197 +762,284 @@
             }
         }
 
-        const statusText = document.getElementById('match-status-text');
+        document.addEventListener("DOMContentLoaded", () => {
+            initLiveStreams();
+            initFIFAFixtures();
+            initF1Leaderboard();
+            evalLayoutState();
+        });
 
-        fetch('https://streamed.pk/api/matches/live?t=' + new Date().getTime())
-            .then(res => res.json())
-            .then(matches => {
-                statusText.innerText = "Streams only work when there's a live active match.";
+        function initLiveStreams() {
+            const statusText = document.getElementById('match-status-text');
 
-                const footballMatches = matches.filter(m => {
-                    const cat = (m.category || '').toLowerCase();
-                    const title = (m.title || '').toLowerCase();
-                    return cat === 'football' || 
-                           cat === 'soccer' || 
-                           cat === 'euro' ||
-                           title.includes('vs') && (title.includes('fc') || cat.includes('cup'));
-                });
+            fetch('https://streamed.pk/api/matches/live?t=' + new Date().getTime())
+                .then(res => res.json())
+                .then(matches => {
+                    statusText.innerText = "Streams only work when there's a live active match.";
 
-                const f1Matches = matches.filter(m => 
-                    m.category === 'f1' || 
-                    m.category === 'formula1' || 
-                    (m.title || '').toLowerCase().includes('grand prix')
-                );
-
-                const cricketMatches = matches.filter(m => 
-                    m.category === 'cricket' || 
-                    (m.title || '').toLowerCase().includes('pakw') || 
-                    (m.title || '').toLowerCase().includes('indw') || 
-                    (m.title || '').toLowerCase().includes('cricket')
-                );
-
-                function processSection(matchList, containerId, sectionType, maxButtons) {
-                    const containerEl = document.getElementById(containerId);
-                    if (!containerEl || matchList.length === 0) return;
-
-                    containerEl.innerHTML = '';
-                    let isFirstMatch = true;
-
-                    matchList.forEach((match) => {
-                        const btn = document.createElement('button');
-                        btn.className = 'match-toggle-btn';
-                        btn.dataset.id = match.id;
-                        btn.innerHTML = `<span class="status-dot"></span> ${match.title}`;
-                        
-                        btn.onclick = () => handleMatchSelection(match.id, sectionType, maxButtons);
-                        containerEl.appendChild(btn);
-
-                        if (match.sources && match.sources.length > 0) {
-                            fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
-                                .then(res => res.json())
-                                .then(streams => {
-                                    matchStreamsCache[match.id] = streams.sort((a, b) => {
-                                        if (a.hd !== b.hd) return b.hd - a.hd;
-                                        if (a.language === 'English' && b.language !== 'English') return -1;
-                                        return 0;
-                                    });
-
-                                    if (isFirstMatch) {
-                                        handleMatchSelection(match.id, sectionType, maxButtons);
-                                        isFirstMatch = false;
-                                    }
-                                })
-                                .catch(err => console.error("Error fetching stream data:", err));
-                        }
+                    const footballMatches = matches.filter(m => {
+                        const cat = (m.category || '').toLowerCase();
+                        const title = (m.title || '').toLowerCase();
+                        return cat === 'football' || 
+                               cat === 'soccer' || 
+                               cat === 'euro' ||
+                               (title.includes('vs') && (title.includes('fc') || cat.includes('cup')));
                     });
-                }
 
-                processSection(footballMatches, 'football-matches-container', 'football', 5);
-                processSection(cricketMatches, 'cricket-matches-container', 'cricket', 3);
+                    const f1Matches = matches.filter(m => 
+                        m.category === 'f1' || 
+                        m.category === 'formula1' || 
+                        (m.title || '').toLowerCase().includes('grand prix')
+                    );
 
-                if (f1Matches.length > 0) {
-                    const container = document.getElementById('f1-container');
-                    container.innerHTML = ''; 
+                    const cricketMatches = matches.filter(m => 
+                        m.category === 'cricket' || 
+                        (m.title || '').toLowerCase().includes('pakw') || 
+                        (m.title || '').toLowerCase().includes('indw') || 
+                        (m.title || '').toLowerCase().includes('cricket')
+                    );
 
-                    f1Matches.forEach((match) => {
-                        if (match.sources && match.sources.length > 0) {
-                            fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
-                                .then(res => res.json())
-                                .then(streams => {
-                                    if (streams.length > 0) {
-                                        const sorted = streams.sort((a, b) => {
+                    function processSection(matchList, containerId, sectionType, maxButtons) {
+                        const containerEl = document.getElementById(containerId);
+                        if (!containerEl || matchList.length === 0) return;
+
+                        containerEl.innerHTML = '';
+                        let isFirstMatch = true;
+
+                        matchList.forEach((match) => {
+                            const btn = document.createElement('button');
+                            btn.className = 'match-toggle-btn';
+                            btn.dataset.id = match.id;
+                            btn.innerHTML = `<span class="status-dot"></span> ${match.title}`;
+                            
+                            btn.onclick = () => handleMatchSelection(match.id, sectionType, maxButtons);
+                            containerEl.appendChild(btn);
+
+                            if (match.sources && match.sources.length > 0) {
+                                fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
+                                    .then(res => res.json())
+                                    .then(streams => {
+                                        matchStreamsCache[match.id] = streams.sort((a, b) => {
                                             if (a.hd !== b.hd) return b.hd - a.hd;
                                             if (a.language === 'English' && b.language !== 'English') return -1;
                                             return 0;
                                         });
 
-                                        sorted.forEach((stream, index) => {
-                                            const btn = document.createElement('button');
-                                            btn.className = 'stream-btn';
-                                            btn.dataset.url = stream.embedUrl;
-                                            
-                                            let label = "Stream " + (index + 1);
-                                            if (stream.name && stream.name.trim() !== "") {
-                                                label = stream.name;
-                                            } else if (stream.language && stream.language !== "Unknown") {
-                                                label = stream.language;
-                                            }
+                                        if (isFirstMatch) {
+                                            handleMatchSelection(match.id, sectionType, maxButtons);
+                                            isFirstMatch = false;
+                                        }
+                                    })
+                                    .catch(err => console.error(err));
+                            }
+                        });
+                    }
 
-                                            if (index === sorted.length - 1 && sorted.length > 1) {
-                                                btn.innerText = "Low Quality Stream";
-                                            } else {
-                                                btn.innerText = label;
-                                            }
+                    processSection(footballMatches, 'football-matches-container', 'football', 5);
+                    processSection(cricketMatches, 'cricket-matches-container', 'cricket', 3);
 
-                                            btn.onclick = () => switchStream(stream.embedUrl, btn, 'f1');
-                                            container.appendChild(btn);
+                    if (f1Matches.length > 0) {
+                        const container = document.getElementById('f1-container');
+                        if (container) {
+                            container.innerHTML = ''; 
 
-                                            if (index === 0 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
-                                                switchStream(stream.embedUrl, btn, 'f1');
+                            f1Matches.forEach((match) => {
+                                if (match.sources && match.sources.length > 0) {
+                                    fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
+                                        .then(res => res.json())
+                                        .then(streams => {
+                                            if (streams.length > 0) {
+                                                const sorted = streams.sort((a, b) => {
+                                                    if (a.hd !== b.hd) return b.hd - a.hd;
+                                                    if (a.language === 'English' && b.language !== 'English') return -1;
+                                                    return 0;
+                                                });
+
+                                                sorted.forEach((stream, index) => {
+                                                    const btn = document.createElement('button');
+                                                    btn.className = 'stream-btn';
+                                                    btn.dataset.url = stream.embedUrl;
+                                                    
+                                                    let label = "Stream " + (index + 1);
+                                                    if (stream.name && stream.name.trim() !== "") {
+                                                        label = stream.name;
+                                                    } else if (stream.language && stream.language !== "Unknown") {
+                                                        label = stream.language;
+                                                    }
+
+                                                    if (index === sorted.length - 1 && sorted.length > 1) {
+                                                        btn.innerText = "Low Quality Stream";
+                                                    } else {
+                                                        btn.innerText = label;
+                                                    }
+
+                                                    btn.onclick = () => switchStream(stream.embedUrl, btn, 'f1');
+                                                    container.appendChild(btn);
+
+                                                    if (index === 0 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
+                                                        switchStream(stream.embedUrl, btn, 'f1');
+                                                    }
+                                                });
                                             }
-                                        });
-                                    }
-                                })
-                                .catch(err => console.error("Error fetching F1 stream details:", err));
+                                        })
+                                        .catch(err => console.error(err));
+                                }
+                            });
                         }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    if (statusText) statusText.innerText = "Error syncing stream feeds.";
+                });
+        }
+
+        function initFIFAFixtures() {
+            fetch('https://www.thestatsapi.com/world-cup/data/fixtures.json?t=' + new Date().getTime())
+                .then(response => response.json())
+                .then(data => {
+                    const fixtures = data.fixtures || [];
+                    const now = new Date();
+                    
+                    let futureMatches = [];
+                    fixtures.forEach(match => {
+                        const kickoff = new Date(match.kickoffUtc);
+                        if (kickoff >= now) futureMatches.push(match);
+                    });
+
+                    futureMatches.sort((a,b) => new Date(a.kickoffUtc) - new Date(b.kickoffUtc));
+                    
+                    const nextHook = document.getElementById('wc-next-hook');
+                    const scrollHook = document.getElementById('wc-scroll-hook');
+                    
+                    if (futureMatches.length > 0) {
+                        const nextMatch = futureMatches[0];
+                        const remainingMatches = futureMatches.slice(1);
+                        
+                        const nextDate = new Date(nextMatch.kickoffUtc);
+                        const localTimeStr = nextDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        const localDateStr = nextDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
+                        
+                        if (nextHook) {
+                            nextHook.innerHTML = `
+                                <div class="wc-label-mini">Up Next</div>
+                                <div class="wc-teams-display">${nextMatch.homeTeam} vs ${nextMatch.awayTeam}</div>
+                                <div class="wc-time-display">${localDateStr} • ${localTimeStr} (${nextMatch.stage.replace('-', ' ')})</div>
+                            `;
+                        }
+
+                        if (scrollHook) {
+                            if(remainingMatches.length > 0) {
+                                scrollHook.innerHTML = '';
+                                remainingMatches.forEach(match => {
+                                    const mDate = new Date(match.kickoffUtc);
+                                    const rowTime = mDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                    const rowDate = mDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
+                                    
+                                    const row = document.createElement('div');
+                                    row.className = 'wc-schedule-row';
+                                    row.innerHTML = `
+                                        <span class="wc-row-teams">${match.homeTeam} vs ${match.awayTeam}</span>
+                                        <span class="wc-row-meta">${rowDate} • ${rowTime}</span>
+                                    `;
+                                    scrollHook.appendChild(row);
+                                });
+                            } else {
+                                scrollHook.innerHTML = '<div class="wc-schedule-row"><span class="wc-row-teams">No subsequent games scheduled.</span></div>';
+                            }
+                        }
+                    } else {
+                        if (nextHook) {
+                            nextHook.innerHTML = `
+                                <div class="wc-label-mini">Tournament Status</div>
+                                <div class="wc-teams-display">World Cup Concluded</div>
+                                <div class="wc-time-display">Check back for upcoming match series!</div>
+                            `;
+                        }
+                        if (scrollHook) scrollHook.innerHTML = '<div class="wc-schedule-row"><span class="wc-row-teams">No games remaining.</span></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    const nextHook = document.getElementById('wc-next-hook');
+                    if (nextHook) nextHook.innerHTML = '<div class="wc-time-display">Failed to load live calendar indexes.</div>';
+                });
+        }
+
+        async function initF1Leaderboard() {
+            const leaderHook = document.getElementById('f1-leader-name');
+            const leaderTeamHook = document.getElementById('f1-leader-team');
+            const boardHook = document.getElementById('f1-board-hook');
+
+            const teamColors = {
+                'mclaren': '#FF8000',      
+                'ferrari': '#EF1A2D',      
+                'mercedes': '#00D2BE',     
+                'red_bull': '#0038FF',     
+                'aston_martin': '#006F62', 
+                'alpine': '#FF87BC',       
+                'williams': '#05A9FF',     
+                'rb': '#FFFFFF',           
+                'sauber': '#52E252',       
+                'audi': '#C4143C',         
+                'haas': '#B6BABD'          
+            };
+
+            try {
+                const response = await fetch('https://api.jolpi.ca/ergast/f1/current/driverStandings.json');
+                if (!response.ok) throw new Error(`HTTP network error: ${response.status}`);
+                
+                const data = await response.json();
+                const standingsLists = data?.MRData?.StandingsTable?.StandingsLists;
+                
+                if (!standingsLists || standingsLists.length === 0) throw new Error("Standings list missing.");
+                const standings = standingsLists[0].DriverStandings;
+
+                if (!standings || standings.length === 0) throw new Error("No driver rows found.");
+
+                const leaderData = standings[0];
+                const leaderDriver = leaderData.Driver;
+                const leaderConstructors = leaderData.Constructors[0] || { name: 'Independent', constructorId: 'none' };
+                const leaderColor = teamColors[leaderConstructors.constructorId] || '#ff4757';
+
+                if (leaderHook) {
+                    leaderHook.innerHTML = `P1. ${leaderDriver.givenName} ${leaderDriver.familyName} <span style="color: ${leaderColor}; font-size:12px;">[${leaderDriver.code || 'DRV'}]</span>`;
+                }
+                if (leaderTeamHook) {
+                    leaderTeamHook.innerHTML = `${leaderConstructors.name} — ${leaderData.points} Points Total`;
+                }
+
+                if (boardHook) {
+                    boardHook.innerHTML = '';
+                    standings.forEach((entry) => {
+                        const driver = entry.Driver;
+                        const constructor = entry.Constructors[0] || { name: 'Independent', constructorId: 'none' };
+                        const teamColor = teamColors[constructor.constructorId] || '#333';
+
+                        const row = document.createElement('div');
+                        row.className = 'wc-schedule-row';
+                        row.style.borderLeft = `4px solid ${teamColor}`;
+
+                        row.innerHTML = `
+                            <span class="wc-row-teams">
+                                <span style="color: #666; font-weight:800; margin-right:6px;">${entry.position}.</span> 
+                                ${driver.givenName} ${driver.familyName}
+                                <span style="color: #555; font-size: 11px; margin-left: 4px;">(${driver.code || ''})</span>
+                            </span>
+                            <span class="wc-row-meta" style="color: #fff; font-weight:700;">
+                                ${entry.points} <span style="font-size:10px; color:#666; font-weight:400;">PTS</span>
+                            </span>
+                        `;
+                        boardHook.appendChild(row);
                     });
                 }
-            })
-            .catch(err => {
-                console.error("API error:", err);
-                statusText.innerText = "Error syncing stream feeds. Using hardcoded backups.";
-            });
-
-        // FIFA World Cup Schedule Tracker
-        fetch('https://www.thestatsapi.com/world-cup/data/fixtures.json?t=' + new Date().getTime())
-            .then(response => response.json())
-            .then(data => {
-                const fixtures = data.fixtures || [];
-                const now = new Date();
-                
-                let futureMatches = [];
-                let nextMatch = null;
-
-                fixtures.forEach(match => {
-                    const kickoff = new Date(match.kickoffUtc);
-                    if (kickoff >= now) {
-                        futureMatches.push(match);
-                    }
-                });
-
-                futureMatches.sort((a,b) => new Date(a.kickoffUtc) - new Date(b.kickoffUtc));
-                
-                const nextHook = document.getElementById('wc-next-hook');
-                const scrollHook = document.getElementById('wc-scroll-hook');
-                
-                if (futureMatches.length > 0) {
-                    nextMatch = futureMatches[0];
-                    const remainingMatches = futureMatches.slice(1);
-                    
-                    const nextDate = new Date(nextMatch.kickoffUtc);
-                    const localTimeStr = nextDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const localDateStr = nextDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
-                    
-                    nextHook.innerHTML = `
-                        <div class="wc-label-mini">Up Next</div>
-                        <div class="wc-teams-display">${nextMatch.homeTeam} vs ${nextMatch.awayTeam}</div>
-                        <div class="wc-time-display">${localDateStr} • ${localTimeStr} (${nextMatch.stage.replace('-', ' ')})</div>
-                    `;
-
-                    if(remainingMatches.length > 0) {
-                        scrollHook.innerHTML = '';
-                        remainingMatches.forEach(match => {
-                            const mDate = new Date(match.kickoffUtc);
-                            const rowTime = mDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            const rowDate = mDate.toLocaleDateString([], {month: 'short', day: 'numeric'});
-                            
-                            const row = document.createElement('div');
-                            row.className = 'wc-schedule-row';
-                            row.innerHTML = `
-                                <span class="wc-row-teams">${match.homeTeam} vs ${match.awayTeam}</span>
-                                <span class="wc-row-meta">${rowDate} • ${rowTime}</span>
-                            `;
-                            scrollHook.appendChild(row);
-                        });
-                    } else {
-                        scrollHook.innerHTML = '<div class="wc-schedule-row"><span class="wc-row-teams">No subsequent games scheduled.</span></div>';
-                    }
-                } else {
-                    nextHook.innerHTML = `
-                        <div class="wc-label-mini">Tournament Status</div>
-                        <div class="wc-teams-display">World Cup Concluded</div>
-                        <div class="wc-time-display">Check back for upcoming match series!</div>
-                    `;
-                    scrollHook.innerHTML = '<div class="wc-schedule-row"><span class="wc-row-teams">No upcoming fixtures found.</span></div>';
-                }
-            })
-            .catch(error => {
-                console.error("Error connecting to World Cup Schedule API:", error);
-                document.getElementById('wc-next-hook').innerHTML = `<div class="wc-time-display">Failed to load schedule telemetry.</div>`;
-            });
+            } catch (error) {
+                console.error(error);
+                if (leaderHook) leaderHook.innerText = "Standings Offline";
+                if (leaderTeamHook) leaderTeamHook.innerText = "Unable to parse current F1 driver dataset.";
+                if (boardHook) boardHook.innerHTML = '<div class="wc-schedule-row"><span class="wc-row-teams" style="color:#555;">Could not connect to standings database.</span></div>';
+            }
+        }
     </script>
-
-    <script defer src="/_vercel/insights/script.js"></script>
-    
   </body>
 </html>
