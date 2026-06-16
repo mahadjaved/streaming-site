@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Stream Dashboard</title>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@300..700&display=swap');
 
       :root {
           --ambient-glow-1: #1a1a1a;
@@ -38,44 +38,161 @@
           margin: 0 auto;
           box-sizing: border-box;
       }
+.header-section {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 30px 40px 0px 40px;
+    height: 120px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    box-sizing: border-box;
+    background: transparent; 
+}
+.header-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    z-index: -6;
+    background: linear-gradient(to bottom, 
+        rgba(10, 10, 10, 0.85) 0%, 
+        rgba(10, 10, 10, 0.4) 40%, 
+        rgba(10, 10, 10, 0) 100%
+    );
+    pointer-events: none;
+}
 
-      .header-section {
-          padding: 40px 40px 20px 40px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-      }
+.header-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    height: 40%;
+    z-index: -5;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+    pointer-events: none;
+}
+.header-section {
+    background-image: linear-gradient(to bottom, rgba(10,10,10,0.1), transparent);
+}
 
+.header-section .header-text-group,
+.header-section .widget-toggles {
+    position: relative;
+    z-index: 10; 
+}
+
+.header-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    height: 140px;
+    z-index: -2;
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0.8) 0%, rgba(10, 10, 10, 0.3) 50%, rgba(10, 10, 10, 0) 100%);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    mask-image: linear-gradient(to bottom, 
+        black 0%, 
+        rgba(0, 0, 0, 1) 20%, 
+        rgba(0, 0, 0, 0.7) 45%, 
+        rgba(0, 0, 0, 0.3) 70%, 
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(to bottom, 
+        black 0%, 
+        rgba(0, 0, 0, 1) 20%, 
+        rgba(0, 0, 0, 0.7) 45%, 
+        rgba(0, 0, 0, 0.3) 70%, 
+        transparent 100%
+    );
+}
+
+.header-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    height: 170px; 
+    z-index: -1;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    mask-image: linear-gradient(to bottom, 
+        rgba(0, 0, 0, 1) 0%, 
+        rgba(0, 0, 0, 0.5) 30%, 
+        rgba(0, 0, 0, 0.15) 70%, 
+        transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(to bottom, 
+        rgba(0, 0, 0, 1) 0%, 
+        rgba(0, 0, 0, 0.5) 30%, 
+        rgba(0, 0, 0, 0.15) 70%, 
+        transparent 100%
+    );
+}
       .header-text-group {
           display: flex;
           flex-direction: column;
+          position: relative;
+          z-index: 2;
+      }
+
+      .title-pill {
+          display: inline-flex;
+          align-items: center;
+          background: #111111;
+          padding: 6px 16px;
+          border-radius: 30px;
+          border: 1px solid #222222;
+          width: fit-content;
+          box-sizing: border-box;
+          height: 31px;
       }
 
       h2 {
           color: white;
-          font-size: 30px;
-          margin: 0 0 10px 0;
+          font-size: 14px;
+          font-weight: 700;
+          margin: 0;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          line-height: 1;
+      }
+
+      .font-space-grotesk {
+          font-family: 'Space Grotesk', sans-serif !important;
+          letter-spacing: 0.2px; 
       }
 
       p.text {
           color: #737373;
-          margin: 0;
+          margin: 0 0 16px 0;
+          padding-left: 28px;
+          font-size: 14px;
+          grid-column: 1 / -1;
       }
 
       .widget-toggles {
           display: flex;
           gap: 10px;
           background: #111111;
-          padding: 6px;
+          padding: 4px;
           border-radius: 30px;
           border: 1px solid #222222;
+          flex-shrink: 0;
+          box-sizing: border-box;
+          position: relative;
+          z-index: 2;
       }
 
       .toggle-btn {
           background: transparent;
           color: #555555;
           border: none;
-          padding: 6px 14px;
+          padding: 4px 14px;
           border-radius: 20px;
           font-family: 'Inter', sans-serif;
           font-size: 11px;
@@ -87,6 +204,7 @@
           gap: 6px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
+          height: 21px;
       }
 
       .toggle-btn.active {
@@ -108,12 +226,14 @@
       }
 
       .dashboard-container {
-          padding: 0 15px 40px 15px;
+          padding: 0px 15px 40px 15px;
           display: grid;
           grid-template-columns: 1fr 400px;
           gap: 24px;
           align-items: start;
           transition: grid-template-columns 0.3s ease;
+          position: relative;
+          z-index: 10;
       }
 
       .dashboard-container.widgets-disabled {
@@ -136,6 +256,8 @@
           flex-direction: column;
           gap: 24px;
           min-width: 0;
+          position: sticky;
+          top: 105px; 
       }
 
       .sidebar-stack.hidden {
@@ -248,7 +370,7 @@
       .sport-section { margin-bottom: 0px; }
 
       .control-title {
-          color: #c3e0db;
+          color: #b8d1cb;
           font-size: 11px;
           margin: 0 0 12px 0;
           text-transform: uppercase;
@@ -489,21 +611,28 @@
       }
 
       @media (max-width: 990px) {
-          .header-section { flex-direction: column; gap: 16px; align-items: flex-start; }
-          .dashboard-container, .dashboard-container.widgets-disabled { grid-template-columns: 1fr; gap: 24px; }
-          .sidebar-stack { width: 100%; }
+          .header-section { position: relative; flex-direction: column; gap: 16px; align-items: flex-start; padding: 20px; height: auto; }
+          .header-section::before, .header-section::after { display: none; }
+          .title-pill { height: auto; }
+          .sidebar-stack { position: relative; top: 0; width: 100%; }
+          .dashboard-container, .dashboard-container.widgets-disabled { grid-template-columns: 1fr; gap: 24px; padding-top: 20px; }
           .wc-card { max-height: none; }
           .wc-schedule-scroll { max-height: 400px; }
           .dashboard-container.widgets-disabled .media-stack { display: flex; }
+          p.text { padding-left: 4px; margin-bottom: 0; }
       }
     </style>
   </head>
   <body>
+
     <div class="main-content">
+        <!-- Pinned Progressive Header Container -->
         <div class="header-section">
             <div class="header-text-group">
-                <h2>Live Streaming Dashboard</h2>
-                <p class="text" id="match-status-text">Checking for active matches...</p>
+                <div class="title-pill">
+                    <!-- Heading 1: Live Stream Dashboard -->
+                    <h2 class="font-space-grotesk">Live Streaming Dashboard</h2>
+                </div>
             </div>
             
             <div class="widget-toggles">
@@ -517,6 +646,8 @@
         </div>
         
         <div class="dashboard-container" id="dashboard-layout">
+            <p class="text" id="match-status-text">Checking for active matches...</p>
+
             <div class="media-stack">
                 <div class="player-column">
                     <div id="glow-wrapper" class="ambient-glow-wrapper">
@@ -575,9 +706,10 @@
             <div class="sidebar-stack" id="sidebar-container">
                 <div class="wc-card" id="fifa-widget">
                     <div class="wc-header-inline">
-                        <div class="wc-title-main">
+                        <!-- Heading 2: FIFA World Cup 2026 Schedule -->
+                        <div class="wc-title-main font-space-grotesk">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#70a1ff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L11 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                            FIFA World Cup 2026 Fixtures
+                            FIFA World Cup 2026 Schedule
                         </div>
                         <div class="wc-live-badge">Live Matches Schedule</div>
                     </div>
@@ -596,7 +728,8 @@
 
                 <div class="wc-card" id="f1-widget">
                     <div class="wc-header-inline">
-                        <div class="wc-title-main">
+                        <!-- Heading 3: F1 World Drivers' Championship -->
+                        <div class="wc-title-main font-space-grotesk">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff4757"><path d="M21 12l-3-3H6L3 12l3 3h12l3-3zM2 12c0-4.41 3.59-8 8-8h4c4.41 0 8 3.59 8 8s-3.59 8-8 8h-4c-4.41 0-8-3.59-8-8z"/></svg>
                             F1 World Drivers' Championship
                         </div>
@@ -767,6 +900,12 @@
             initFIFAFixtures();
             initF1Leaderboard();
             evalLayoutState();
+
+            setInterval(() => {
+                initLiveStreams();
+                initFIFAFixtures();
+                initF1Leaderboard();
+            }, 60000);
         });
 
         function initLiveStreams() {
@@ -801,10 +940,20 @@
 
                     function processSection(matchList, containerId, sectionType, maxButtons) {
                         const containerEl = document.getElementById(containerId);
-                        if (!containerEl || matchList.length === 0) return;
+                        if (!containerEl) return;
+                        
+                        if (matchList.length === 0) {
+                            containerEl.innerHTML = `<div class="no-matches-msg">No active ${sectionType} matches detected.</div>`;
+                            const panel = document.getElementById(`${sectionType}-panel`);
+                            if (panel) panel.classList.remove('expanded');
+                            return;
+                        }
+
+                        const currentActiveBtn = containerEl.querySelector('.match-toggle-btn.active');
+                        const currentActiveId = currentActiveBtn ? currentActiveBtn.dataset.id : null;
 
                         containerEl.innerHTML = '';
-                        let isFirstMatch = true;
+                        let matchStillExists = false;
 
                         matchList.forEach((match) => {
                             const btn = document.createElement('button');
@@ -812,6 +961,11 @@
                             btn.dataset.id = match.id;
                             btn.innerHTML = `<span class="status-dot"></span> ${match.title}`;
                             
+                            if (match.id === currentActiveId) {
+                                btn.classList.add('active');
+                                matchStillExists = true;
+                            }
+
                             btn.onclick = () => handleMatchSelection(match.id, sectionType, maxButtons);
                             containerEl.appendChild(btn);
 
@@ -825,24 +979,28 @@
                                             return 0;
                                         });
 
-                                        if (isFirstMatch) {
-                                            handleMatchSelection(match.id, sectionType, maxButtons);
-                                            isFirstMatch = false;
+                                        if (match.id === activeMatchIds[sectionType]) {
+                                            updateMultiStreams(sectionType, maxButtons);
                                         }
                                     })
                                     .catch(err => console.error(err));
                             }
                         });
+
+                        if (!matchStillExists && matchList.length > 0) {
+                            handleMatchSelection(matchList[0].id, sectionType, maxButtons);
+                        }
                     }
 
                     processSection(footballMatches, 'football-matches-container', 'football', 5);
                     processSection(cricketMatches, 'cricket-matches-container', 'cricket', 3);
 
-                    if (f1Matches.length > 0) {
-                        const container = document.getElementById('f1-container');
-                        if (container) {
+                    const container = document.getElementById('f1-container');
+                    if (container) {
+                        if (f1Matches.length === 0) {
+                            container.innerHTML = '<div class="no-matches-msg">No active races detected.</div>';
+                        } else {
                             container.innerHTML = ''; 
-
                             f1Matches.forEach((match) => {
                                 if (match.sources && match.sources.length > 0) {
                                     fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
