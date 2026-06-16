@@ -38,101 +38,53 @@
           margin: 0 auto;
           box-sizing: border-box;
       }
-.header-section {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 30px 40px 0px 40px;
-    height: 120px; 
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    box-sizing: border-box;
-    background: transparent; 
-}
-.header-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    height: 100%;
-    z-index: -6;
-    background: linear-gradient(to bottom, 
-        rgba(10, 10, 10, 0.85) 0%, 
-        rgba(10, 10, 10, 0.4) 40%, 
-        rgba(10, 10, 10, 0) 100%
-    );
-    pointer-events: none;
-}
 
-.header-section::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    height: 40%;
-    z-index: -5;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-    pointer-events: none;
-}
-.header-section {
-    background-image: linear-gradient(to bottom, rgba(10,10,10,0.1), transparent);
-}
+      /* STICKY HIGH-END APPLE BLUR HEADER */
+      .header-section {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          padding: 30px 40px 0px 40px;
+          height: 120px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+          box-sizing: border-box;
+          background: transparent;
+      }
 
-.header-section .header-text-group,
-.header-section .widget-toggles {
-    position: relative;
-    z-index: 10; 
-}
+      .header-section .header-text-group,
+      .header-section .widget-toggles {
+          position: relative;
+          z-index: 10;
+      }
 
-.header-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    height: 140px;
-    z-index: -2;
-    background: linear-gradient(to bottom, rgba(10, 10, 10, 0.8) 0%, rgba(10, 10, 10, 0.3) 50%, rgba(10, 10, 10, 0) 100%);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    mask-image: linear-gradient(to bottom, 
-        black 0%, 
-        rgba(0, 0, 0, 1) 20%, 
-        rgba(0, 0, 0, 0.7) 45%, 
-        rgba(0, 0, 0, 0.3) 70%, 
-        transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(to bottom, 
-        black 0%, 
-        rgba(0, 0, 0, 1) 20%, 
-        rgba(0, 0, 0, 0.7) 45%, 
-        rgba(0, 0, 0, 0.3) 70%, 
-        transparent 100%
-    );
-}
+      .header-section::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          height: 140px;
+          z-index: -2;
+          background: linear-gradient(to bottom, rgba(10, 10, 10, 0.8) 0%, rgba(10, 10, 10, 0.3) 50%, rgba(10, 10, 10, 0) 100%);
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+          mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+          -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+      }
 
-.header-section::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    height: 170px; 
-    z-index: -1;
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    mask-image: linear-gradient(to bottom, 
-        rgba(0, 0, 0, 1) 0%, 
-        rgba(0, 0, 0, 0.5) 30%, 
-        rgba(0, 0, 0, 0.15) 70%, 
-        transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(to bottom, 
-        rgba(0, 0, 0, 1) 0%, 
-        rgba(0, 0, 0, 0.5) 30%, 
-        rgba(0, 0, 0, 0.15) 70%, 
-        transparent 100%
-    );
-}
+      .header-section::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          height: 170px;
+          z-index: -1;
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
+          mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.5) 30%, rgba(0, 0, 0, 0.15) 70%, transparent 100%);
+          -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.5) 30%, rgba(0, 0, 0, 0.15) 70%, transparent 100%);
+      }
+
       .header-text-group {
           display: flex;
           flex-direction: column;
@@ -164,7 +116,7 @@
 
       .font-space-grotesk {
           font-family: 'Space Grotesk', sans-serif !important;
-          letter-spacing: 0.2px; 
+          letter-spacing: 0.2px;
       }
 
       p.text {
@@ -237,7 +189,7 @@
       }
 
       .dashboard-container.widgets-disabled {
-          grid-template-columns: 1fr 400px;
+          grid-template-columns: 1fr;
       }
 
       .media-stack {
@@ -247,17 +199,13 @@
           min-width: 0;
       }
 
-      .dashboard-container.widgets-disabled .media-stack {
-          display: contents;
-      }
-
       .sidebar-stack {
           display: flex;
           flex-direction: column;
           gap: 24px;
           min-width: 0;
           position: sticky;
-          top: 105px; 
+          top: 140px; 
       }
 
       .sidebar-stack.hidden {
@@ -276,12 +224,6 @@
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 24px;
-      }
-
-      .dashboard-container.widgets-disabled .controls-column {
-          grid-template-columns: 1fr;
-          height: 100%;
-          align-content: start;
       }
 
       .ambient-glow-wrapper {
@@ -370,7 +312,7 @@
       .sport-section { margin-bottom: 0px; }
 
       .control-title {
-          color: #b8d1cb;
+          color: #ff4757;
           font-size: 11px;
           margin: 0 0 12px 0;
           text-transform: uppercase;
@@ -615,10 +557,9 @@
           .header-section::before, .header-section::after { display: none; }
           .title-pill { height: auto; }
           .sidebar-stack { position: relative; top: 0; width: 100%; }
-          .dashboard-container, .dashboard-container.widgets-disabled { grid-template-columns: 1fr; gap: 24px; padding-top: 20px; }
+          .dashboard-container { grid-template-columns: 1fr; gap: 24px; padding-top: 20px; }
           .wc-card { max-height: none; }
           .wc-schedule-scroll { max-height: 400px; }
-          .dashboard-container.widgets-disabled .media-stack { display: flex; }
           p.text { padding-left: 4px; margin-bottom: 0; }
       }
     </style>
@@ -626,11 +567,9 @@
   <body>
 
     <div class="main-content">
-        <!-- Pinned Progressive Header Container -->
         <div class="header-section">
             <div class="header-text-group">
                 <div class="title-pill">
-                    <!-- Heading 1: Live Stream Dashboard -->
                     <h2 class="font-space-grotesk">Live Streaming Dashboard</h2>
                 </div>
             </div>
@@ -706,7 +645,6 @@
             <div class="sidebar-stack" id="sidebar-container">
                 <div class="wc-card" id="fifa-widget">
                     <div class="wc-header-inline">
-                        <!-- Heading 2: FIFA World Cup 2026 Schedule -->
                         <div class="wc-title-main font-space-grotesk">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#70a1ff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L11 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                             FIFA World Cup 2026 Schedule
@@ -728,7 +666,6 @@
 
                 <div class="wc-card" id="f1-widget">
                     <div class="wc-header-inline">
-                        <!-- Heading 3: F1 World Drivers' Championship -->
                         <div class="wc-title-main font-space-grotesk">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff4757"><path d="M21 12l-3-3H6L3 12l3 3h12l3-3zM2 12c0-4.41 3.59-8 8-8h4c4.41 0 8 3.59 8 8s-3.59 8-8 8h-4c-4.41 0-8-3.59-8-8z"/></svg>
                             F1 World Drivers' Championship
@@ -759,6 +696,35 @@
         let matchStreamsCache = {};
         let activeMatchIds = { football: null, cricket: null };
 
+        // Delta/Hash cache definitions to prevent redrawing the page when payload data hasn't changed
+        let previousPayloadHashes = {
+            streams: null,
+            fifa: null,
+            f1: null
+        };
+
+        // Modern layout persistence controller using LocalStorage
+        function syncWidgetStateFromStorage() {
+            const defaults = { 'fifa-widget': 'show', 'f1-widget': 'show' };
+            
+            ['fifa-widget', 'f1-widget'].forEach(id => {
+                const state = localStorage.getItem(`dashboard_widget_${id}`) || defaults[id];
+                const widget = document.getElementById(id);
+                const btn = id === 'fifa-widget' ? document.getElementById('toggle-fifa-btn') : document.getElementById('toggle-f1-btn');
+                
+                if (widget && btn) {
+                    if (state === 'show') {
+                        widget.style.display = 'flex';
+                        btn.classList.add('active');
+                    } else {
+                        widget.style.display = 'none';
+                        btn.classList.remove('active');
+                    }
+                }
+            });
+            evalLayoutState();
+        }
+
         function toggleDashboardWidget(widgetId, buttonElement) {
             const widget = document.getElementById(widgetId);
             if (!widget) return;
@@ -766,11 +732,12 @@
             if (widget.style.display === 'none') {
                 widget.style.display = 'flex';
                 buttonElement.classList.add('active');
+                localStorage.setItem(`dashboard_widget_${widgetId}`, 'show');
             } else {
                 widget.style.display = 'none';
                 buttonElement.classList.remove('active');
+                localStorage.setItem(`dashboard_widget_${widgetId}`, 'hide');
             }
-
             evalLayoutState();
         }
 
@@ -790,6 +757,10 @@
                 sidebarContainer.classList.remove('hidden');
                 dashboardLayout.classList.remove('widgets-disabled');
             }
+        }
+
+        function generateDataHash(obj) {
+            return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
         }
 
         function switchStream(streamUrl, buttonElement, categoryType) {
@@ -896,11 +867,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            syncWidgetStateFromStorage();
             initLiveStreams();
             initFIFAFixtures();
             initF1Leaderboard();
-            evalLayoutState();
 
+            // Background intervals run regularly, but the delta hashes completely shield against DOM churn
             setInterval(() => {
                 initLiveStreams();
                 initFIFAFixtures();
@@ -914,6 +886,13 @@
             fetch('https://streamed.pk/api/matches/live?t=' + new Date().getTime())
                 .then(res => res.json())
                 .then(matches => {
+                    // Delta check: compute current hash configuration
+                    const currentHash = generateDataHash(matches);
+                    if (previousPayloadHashes.streams === currentHash) {
+                        return; // Old stuff matched new stuff exactly. Halt execution.
+                    }
+                    previousPayloadHashes.streams = currentHash;
+
                     statusText.innerText = "Streams only work when there's a live active match.";
 
                     const footballMatches = matches.filter(m => {
@@ -1056,6 +1035,13 @@
             fetch('https://www.thestatsapi.com/world-cup/data/fixtures.json?t=' + new Date().getTime())
                 .then(response => response.json())
                 .then(data => {
+                    // Delta payload hash assessment
+                    const currentHash = generateDataHash(data);
+                    if (previousPayloadHashes.fifa === currentHash) {
+                        return; // Halt refresh, network structural configuration hasn't dropped variance.
+                    }
+                    previousPayloadHashes.fifa = currentHash;
+
                     const fixtures = data.fixtures || [];
                     const now = new Date();
                     
@@ -1148,6 +1134,14 @@
                 if (!response.ok) throw new Error(`HTTP network error: ${response.status}`);
                 
                 const data = await response.json();
+
+                // Delta hash comparison layer
+                const currentHash = generateDataHash(data);
+                if (previousPayloadHashes.f1 === currentHash) {
+                    return; 
+                }
+                previousPayloadHashes.f1 = currentHash;
+
                 const standingsLists = data?.MRData?.StandingsTable?.StandingsLists;
                 
                 if (!standingsLists || standingsLists.length === 0) throw new Error("Standings list missing.");
