@@ -892,155 +892,202 @@
             }, 60000);
         });
 
-        function initLiveStreams() {
-            const statusText = document.getElementById('match-status-text');
+function initLiveStreams() {
+    const statusText = document.getElementById('match-status-text');
 
-            fetch('https://streamed.pk/api/matches/live?t=' + new Date().getTime())
-                .then(res => res.json())
-                .then(matches => {
-                    const currentHash = generateDataHash(matches);
-                    if (previousPayloadHashes.streams === currentHash) {
-                        return; 
-                    }
-                    previousPayloadHashes.streams = currentHash;
+    fetch('https://streamed.pk/api/matches/live?t=' + new Date().getTime())
+        .then(res => res.json())
+        .then(matches => {
+            const currentHash = generateDataHash(matches);
+            if (previousPayloadHashes.streams === currentHash) {
+                return; 
+            }
+            previousPayloadHashes.streams = currentHash;
 
-                    statusText.innerText = "Streams only work when there's a live active match.";
+            statusText.innerText = "Streams only work when there's a live active match.";
 
-                    const footballMatches = matches.filter(m => {
-                        const cat = (m.category || '').toLowerCase();
-                        const title = (m.title || '').toLowerCase();
-                        return cat === 'football' || 
-                               cat === 'soccer' || 
-                               cat === 'euro' ||
-                               (title.includes('vs') && (title.includes('fc') || cat.includes('cup')));
-                    });
+            const footballMatches = matches.filter(m => {
+                const cat = (m.category || '').toLowerCase();
+                const title = (m.title || '').toLowerCase();
+                return cat === 'football' || 
+                       cat === 'soccer' || 
+                       cat === 'euro' ||
+                       ((title.includes('vs') || title.includes(' fc ')) && (cat.includes('cup') || cat.includes('football') || cat.includes('soccer')));
+            });
 
-                    const f1Matches = matches.filter(m => 
-                        m.category === 'f1' || 
-                        m.category === 'formula1' || 
-                        (m.title || '').toLowerCase().includes('grand prix')
-                    );
+            const f1Matches = matches.filter(m => 
+                m.category === 'f1' || 
+                m.category === 'formula1' || 
+                (m.title || '').toLowerCase().includes('grand prix')
+            );
 
-                    const cricketMatches = matches.filter(m => 
-                        m.category === 'cricket' || 
-                        (m.title || '').toLowerCase().includes('pakw') || 
-                        (m.title || '').toLowerCase().includes('indw') || 
-                        (m.title || '').toLowerCase().includes('cricket')
-                    );
+            const cricketMatches = matches.filter(m => {
+                const cat = (m.category || '').toLowerCase();
+                const title = (m.title || '').toLowerCase();
+                if (title.includes('maroons') || title.includes('blues') || title.includes('nrl') || title.includes('rugby') || title.includes('origin')) {
+                    return false;
+                }
+                const isExplicitCricket = (cat === 'cricket' || title.includes('cricket') || title.includes('willow'));
+                const isCricketKeywords = title.includes('pakw') || title.includes('indw') || 
+                                          title.includes('odi') || title.includes('test') || 
+                                          title.includes('t20') || title.includes('t10') ||
+                                          title.includes('ipl') || title.includes('psl');
+                const isVersusFormat = title.includes('vs') && (
+                    title.includes('india') || title.includes('afg') || title.includes('eng') || 
+                    title.includes('nz') || title.includes('pak') || title.includes('aus') || 
+                    title.includes('ban') || title.includes('sl') || title.includes('wi') || 
+                    title.includes('sa') || title.includes('zealand') || title.includes('england') ||
+                    title.includes('afghanistan')
+                );
+                return isExplicitCricket || isCricketKeywords || isVersusFormat;
+            });
 
-                    function processSection(matchList, containerId, sectionType, maxButtons) {
-                        const containerEl = document.getElementById(containerId);
-                        if (!containerEl) return;
-                        
-                        if (matchList.length === 0) {
-                            containerEl.innerHTML = `<div class="no-matches-msg">No active ${sectionType} matches detected.</div>`;
-                            const panel = document.getElementById(`${sectionType}-panel`);
-                            if (panel) panel.classList.remove('expanded');
-                            return;
+            function processSection(matchList, containerId, sectionType, maxButtons) {
+                const containerEl = document.getElementById(containerId);
+                if (!containerEl) return;
+                
+                containerEl.innerHTML = '';
+
+                if (sectionType === 'cricket') {
+                    const willowBtn = document.createElement('button');
+                    willowBtn.className = 'match-toggle-btn willow-special-btn';
+                    willowBtn.dataset.id = 'always-on-willow';
+                    willowBtn.innerHTML = `<span class="status-dot"></span> 📺 Willow by Cricbuz`;
+                    willowBtn.onclick = () => {
+                        const matchingLiveWillow = matches.find(m => (m.title || '').toLowerCase().includes('willow'));
+                        if (matchingLiveWillow && matchStreamsCache[matchingLiveWillow.id]) {
+                            handleMatchSelection(matchingLiveWillow.id, 'cricket', maxButtons);
+                        } else {
+                            switchStream('https://embed.st/embed/admin/admin-willow-cricket/1', willowBtn, 'cricket');
+                            const panel = document.getElementById('cricket-panel');
+                            if (panel) panel.classList.add('expanded');
                         }
+                        containerEl.querySelectorAll('.match-toggle-btn').forEach(b => b.classList.remove('active'));
+                        willowBtn.classList.add('active');
+                    };
+                    containerEl.appendChild(willowBtn);
+                }
+                
+                if (matchList.length === 0 && sectionType !== 'cricket') {
+                    containerEl.innerHTML = `<div class="no-matches-msg">No active ${sectionType} matches detected.</div>`;
+                    const panel = document.getElementById(`${sectionType}-panel`);
+                    if (panel) panel.classList.remove('expanded');
+                    return;
+                }
 
-                        const currentActiveBtn = containerEl.querySelector('.match-toggle-btn.active');
-                        const currentActiveId = currentActiveBtn ? currentActiveBtn.dataset.id : null;
+                const currentActiveBtn = containerEl.querySelector('.match-toggle-btn.active');
+                const currentActiveId = currentActiveBtn ? currentActiveBtn.dataset.id : null;
+                let matchStillExists = false;
 
-                        containerEl.innerHTML = '';
-                        let matchStillExists = false;
+                matchList.forEach((match) => {
+                    if((match.title || '').toLowerCase().includes('willow') && sectionType === 'cricket') {
+                        if (match.sources && match.sources.length > 0) {
+                            fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
+                                .then(res => res.json())
+                                .then(streams => {
+                                    matchStreamsCache[match.id] = streams;
+                                });
+                        }
+                        return;
+                    }
 
-                        matchList.forEach((match) => {
-                            const btn = document.createElement('button');
-                            btn.className = 'match-toggle-btn';
-                            btn.dataset.id = match.id;
-                            btn.innerHTML = `<span class="status-dot"></span> ${match.title}`;
-                            
-                            if (match.id === currentActiveId) {
-                                btn.classList.add('active');
-                                matchStillExists = true;
-                            }
+                    const btn = document.createElement('button');
+                    btn.className = 'match-toggle-btn';
+                    btn.dataset.id = match.id;
+                    btn.innerHTML = `<span class="status-dot"></span> ${match.title}`;
+                    
+                    if (match.id === currentActiveId) {
+                        btn.classList.add('active');
+                        matchStillExists = true;
+                    }
 
-                            btn.onclick = () => handleMatchSelection(match.id, sectionType, maxButtons);
-                            containerEl.appendChild(btn);
+                    btn.onclick = () => handleMatchSelection(match.id, sectionType, maxButtons);
+                    containerEl.appendChild(btn);
 
-                            if (match.sources && match.sources.length > 0) {
-                                fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
-                                    .then(res => res.json())
-                                    .then(streams => {
-                                        matchStreamsCache[match.id] = streams.sort((a, b) => {
+                    if (match.sources && match.sources.length > 0) {
+                        fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
+                            .then(res => res.json())
+                            .then(streams => {
+                                matchStreamsCache[match.id] = streams.sort((a, b) => {
+                                    if (a.hd !== b.hd) return b.hd - a.hd;
+                                    if (a.language === 'English' && b.language !== 'English') return -1;
+                                    return 0;
+                                });
+
+                                if (match.id === activeMatchIds[sectionType]) {
+                                    updateMultiStreams(sectionType, maxButtons);
+                                }
+                            })
+                            .catch(err => console.error(err));
+                    }
+                });
+
+                if (!matchStillExists && matchList.length > 0) {
+                    if (sectionType !== 'cricket') {
+                        handleMatchSelection(matchList[0].id, sectionType, maxButtons);
+                    }
+                }
+            }
+
+            processSection(footballMatches, 'football-matches-container', 'football', 5);
+            processSection(cricketMatches, 'cricket-matches-container', 'cricket', 3);
+
+            const container = document.getElementById('f1-container');
+            if (container) {
+                if (f1Matches.length === 0) {
+                    container.innerHTML = '<div class="no-matches-msg">No active races detected.</div>';
+                } else {
+                    container.innerHTML = ''; 
+                    f1Matches.forEach((match) => {
+                        if (match.sources && match.sources.length > 0) {
+                            fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
+                                .then(res => res.json())
+                                .then(streams => {
+                                    if (streams.length > 0) {
+                                        const sorted = streams.sort((a, b) => {
                                             if (a.hd !== b.hd) return b.hd - a.hd;
                                             if (a.language === 'English' && b.language !== 'English') return -1;
                                             return 0;
                                         });
 
-                                        if (match.id === activeMatchIds[sectionType]) {
-                                            updateMultiStreams(sectionType, maxButtons);
-                                        }
-                                    })
-                                    .catch(err => console.error(err));
-                            }
-                        });
-
-                        if (!matchStillExists && matchList.length > 0) {
-                            handleMatchSelection(matchList[0].id, sectionType, maxButtons);
-                        }
-                    }
-
-                    processSection(footballMatches, 'football-matches-container', 'football', 5);
-                    processSection(cricketMatches, 'cricket-matches-container', 'cricket', 3);
-
-                    const container = document.getElementById('f1-container');
-                    if (container) {
-                        if (f1Matches.length === 0) {
-                            container.innerHTML = '<div class="no-matches-msg">No active races detected.</div>';
-                        } else {
-                            container.innerHTML = ''; 
-                            f1Matches.forEach((match) => {
-                                if (match.sources && match.sources.length > 0) {
-                                    fetch(`https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}?t=` + new Date().getTime())
-                                        .then(res => res.json())
-                                        .then(streams => {
-                                            if (streams.length > 0) {
-                                                const sorted = streams.sort((a, b) => {
-                                                    if (a.hd !== b.hd) return b.hd - a.hd;
-                                                    if (a.language === 'English' && b.language !== 'English') return -1;
-                                                    return 0;
-                                                });
-
-                                                sorted.forEach((stream, index) => {
-                                                    const btn = document.createElement('button');
-                                                    btn.className = 'stream-btn';
-                                                    btn.dataset.url = stream.embedUrl;
-                                                    
-                                                    let label = "Stream " + (index + 1);
-                                                    if (stream.name && stream.name.trim() !== "") {
-                                                        label = stream.name;
-                                                    } else if (stream.language && stream.language !== "Unknown") {
-                                                        label = stream.language;
-                                                    }
-
-                                                    if (index === sorted.length - 1 && sorted.length > 1) {
-                                                        btn.innerText = "Low Quality Stream";
-                                                    } else {
-                                                        btn.innerText = label;
-                                                    }
-
-                                                    btn.onclick = () => switchStream(stream.embedUrl, btn, 'f1');
-                                                    container.appendChild(btn);
-
-                                                    if (index === 0 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
-                                                        switchStream(stream.embedUrl, btn, 'f1');
-                                                    }
-                                                });
+                                        sorted.forEach((stream, index) => {
+                                            const btn = document.createElement('button');
+                                            btn.className = 'stream-btn';
+                                            btn.dataset.url = stream.embedUrl;
+                                            
+                                            let label = "Stream " + (index + 1);
+                                            if (stream.name && stream.name.trim() !== "") {
+                                                label = stream.name;
+                                            } else if (stream.language && stream.language !== "Unknown") {
+                                                label = stream.language;
                                             }
-                                        })
-                                        .catch(err => console.error(err));
-                                }
-                            });
+
+                                            if (index === sorted.length - 1 && sorted.length > 1) {
+                                                btn.innerText = "Low Quality Stream";
+                                            } else {
+                                                btn.innerText = label;
+                                            }
+
+                                            btn.onclick = () => switchStream(stream.embedUrl, btn, 'f1');
+                                            container.appendChild(btn);
+
+                                            if (index === 0 && (!document.getElementById('live-stream').src || document.getElementById('live-stream').src === window.location.href + "about:blank")) {
+                                                switchStream(stream.embedUrl, btn, 'f1');
+                                            }
+                                        });
+                                    }
+                                })
+                                .catch(err => console.error(err));
                         }
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    if (statusText) statusText.innerText = "Error syncing stream feeds.";
-                });
-        }
+                    });
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (statusText) statusText.innerText = "Error syncing stream feeds.";
+        });
+}
 
         function initFIFAFixtures() {
             fetch('https://www.thestatsapi.com/world-cup/data/fixtures.json?t=' + new Date().getTime())
