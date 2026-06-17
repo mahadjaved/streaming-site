@@ -952,7 +952,7 @@ function initLiveStreams() {
                     const willowBtn = document.createElement('button');
                     willowBtn.className = 'match-toggle-btn willow-special-btn';
                     willowBtn.dataset.id = 'always-on-willow';
-                    willowBtn.innerHTML = `<span class="status-dot"></span> 📺 Willow by Cricbuz`;
+                    willowBtn.innerHTML = `<span class="status-dot"></span> Willow by Cricbuz`;
                     willowBtn.onclick = () => {
                         const matchingLiveWillow = matches.find(m => (m.title || '').toLowerCase().includes('willow'));
                         if (matchingLiveWillow && matchStreamsCache[matchingLiveWillow.id]) {
