@@ -25,7 +25,8 @@
       }
 
       body {
-          background-color: #0a0a0a;
+          background: radial-gradient(circle at top center, rgba(206, 245, 238, 0.12) 0%, rgba(206, 245, 238, 0.03) 40%, rgba(10, 10, 10, 0) 70%), #0a0a0a;
+          background-attachment: fixed;
           font-family: 'Inter', sans-serif;
           display: flex;
           flex-direction: column;
@@ -66,7 +67,7 @@
           inset: 0;
           height: 140px;
           z-index: -2;
-          background: linear-gradient(to bottom, rgba(10, 10, 10, 0.8) 0%, rgba(10, 10, 10, 0.3) 50%, rgba(10, 10, 10, 0) 100%);
+          background: linear-gradient(to bottom, rgba(10, 10, 10, 0.7) 0%, rgba(10, 10, 10, 0.2) 60%, rgba(10, 10, 10, 0) 100%);
           backdrop-filter: blur(5px);
           -webkit-backdrop-filter: blur(5px);
           mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
@@ -214,6 +215,7 @@
 
       .player-column { width: 100%; }
 
+      /* Base card setup with transition logic for smooth glows */
       .controls-column {
           width: 100%;
           background: #111111;
@@ -224,6 +226,12 @@
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 24px;
+          transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+      }
+
+      .controls-column:hover {
+          border-color: rgba(206, 245, 238, 0.25);
+          box-shadow: 0 8px 32px rgba(206, 245, 238, 0.06), 0 0 12px rgba(206, 245, 238, 0.03);
       }
 
       .ambient-glow-wrapper {
@@ -311,6 +319,7 @@
 
       .sport-section { margin-bottom: 0px; }
 
+      /* Heading typography updated to use the custom requested color */
       .control-title {
           color: #cef5ee;
           font-size: 11px;
@@ -325,7 +334,7 @@
           flex-direction: column;
           gap: 8px;
           margin-bottom: 12px;
-       }
+      }
 
       .match-toggle-btn {
           background: #161616;
@@ -414,6 +423,7 @@
           box-shadow: 0 0 12px rgba(167, 196, 188, 0.4);
       }
 
+      /* Sidebar widgets setup with transition logic for smooth glows */
       .wc-card {
           background: #111111;
           border: 1px solid #222222;
@@ -423,7 +433,12 @@
           display: flex;
           flex-direction: column;
           max-height: 480px;
-          transition: transform 0.3s ease, opacity 0.3s ease;
+          transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+      }
+
+      .wc-card:hover {
+          border-color: rgba(206, 245, 238, 0.25);
+          box-shadow: 0 8px 32px rgba(206, 245, 238, 0.06), 0 0 12px rgba(206, 245, 238, 0.03);
       }
 
       .wc-header-inline {
@@ -527,7 +542,7 @@
           text-align: right;
           font-size: 12px;
           flex-shrink: 0;
-       }
+      }
 
       .footer-ad-notice {
           flex-shrink: 0;
@@ -696,14 +711,12 @@
         let matchStreamsCache = {};
         let activeMatchIds = { football: null, cricket: null };
 
-        // Delta/Hash cache definitions to prevent redrawing the page when payload data hasn't changed
         let previousPayloadHashes = {
             streams: null,
             fifa: null,
             f1: null
         };
 
-        // Modern layout persistence controller using LocalStorage
         function syncWidgetStateFromStorage() {
             const defaults = { 'fifa-widget': 'show', 'f1-widget': 'show' };
             
@@ -872,7 +885,6 @@
             initFIFAFixtures();
             initF1Leaderboard();
 
-            // Background intervals run regularly, but the delta hashes completely shield against DOM churn
             setInterval(() => {
                 initLiveStreams();
                 initFIFAFixtures();
@@ -886,10 +898,9 @@
             fetch('https://streamed.pk/api/matches/live?t=' + new Date().getTime())
                 .then(res => res.json())
                 .then(matches => {
-                    // Delta check: compute current hash configuration
                     const currentHash = generateDataHash(matches);
                     if (previousPayloadHashes.streams === currentHash) {
-                        return; // Old stuff matched new stuff exactly. Halt execution.
+                        return; 
                     }
                     previousPayloadHashes.streams = currentHash;
 
@@ -1035,10 +1046,9 @@
             fetch('https://www.thestatsapi.com/world-cup/data/fixtures.json?t=' + new Date().getTime())
                 .then(response => response.json())
                 .then(data => {
-                    // Delta payload hash assessment
                     const currentHash = generateDataHash(data);
                     if (previousPayloadHashes.fifa === currentHash) {
-                        return; // Halt refresh, network structural configuration hasn't dropped variance.
+                        return; 
                     }
                     previousPayloadHashes.fifa = currentHash;
 
@@ -1135,7 +1145,6 @@
                 
                 const data = await response.json();
 
-                // Delta hash comparison layer
                 const currentHash = generateDataHash(data);
                 if (previousPayloadHashes.f1 === currentHash) {
                     return; 
